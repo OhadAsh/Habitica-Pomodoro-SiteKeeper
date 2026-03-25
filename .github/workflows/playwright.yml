@@ -12,6 +12,8 @@ jobs:
   test:
     name: E2E (Chromium extension)
     runs-on: ubuntu-latest
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     defaults:
       run:
         working-directory: tests
@@ -54,3 +56,4 @@ jobs:
           name: test-results
           path: tests/test-results/
           retention-days: 7
+          if-no-files-found: ignore
