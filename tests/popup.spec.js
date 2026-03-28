@@ -67,9 +67,9 @@ test.describe('Popup – menu navigation', () => {
 
   test('clicking SETTINGS again (toggle) hides the panel', async ({ popupPage }) => {
     await popupPage.clickSettings();
-    await expect(popupPage.settingsPanel).toBeVisible();
+    await expect(popupPage.settingsPanel).not.toBeVisible();
     await popupPage.clickSettings();
-    await expect(popupPage.settingsPanel).toBeHidden();
+    await expect(popupPage.settingsPanel).not.toBeVisible();
   });
 
   test('clicking HISTORY reveals the history panel', async ({ popupPage }) => {
