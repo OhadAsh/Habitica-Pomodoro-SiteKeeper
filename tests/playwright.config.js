@@ -14,9 +14,9 @@ module.exports = defineConfig({
     ['html', { outputFolder: 'playwright-report', open: 'on-failure' }],
   ],
   use: {
-    screenshot: 'always',
-    video: 'always',
-    trace: 'always',
+    screenshot: 'on-failure',
+    video: 'on-failure',
+    trace: 'on-failure',
   },
   projects: [
     {
