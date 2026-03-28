@@ -1,5 +1,6 @@
 const { test: base, chromium } = require('@playwright/test');
 const path = require('path');
+const fs = require('fs');
 const { PopupPage } = require('./pages/PopupPage');
 
 const pathToExtension = path.join(__dirname, '..', 'app');
@@ -12,12 +13,21 @@ exports.test = base.extend({
    */
   extensionContext: [
     async ({}, use) => {
+      // launchPersistentContext needs a real directory for video output.
+      // We use the same test-results folder Playwright uses for everything else.
+      const videoDir = path.join(__dirname, 'test-results', 'videos');
+      fs.mkdirSync(videoDir, { recursive: true });
+
       const ctx = await chromium.launchPersistentContext('', {
         headless: false,
         args: [
           `--disable-extensions-except=${pathToExtension}`,
           `--load-extension=${pathToExtension}`,
         ],
+        // Persistent contexts bypass the global use:{} config, so we must
+        // configure recording here explicitly.
+        recordVideo: { dir: videoDir },
+        screenshot: 'on',
       });
       await use(ctx);
       await ctx.close();
@@ -57,14 +67,26 @@ exports.test = base.extend({
    * and closes the page automatically after each test. Tests never need to
    * call openPopup() or page.close() themselves.
    */
-  popupPage: async ({ extensionContext, popupUrl }, use) => {
+  popupPage: async ({ extensionContext, popupUrl }, use, testInfo) => {
     const page = await extensionContext.newPage();
     await page.goto(popupUrl);
     await page.waitForFunction(
       () => !document.body.classList.contains('loading'),
       { timeout: 15_000 },
     );
+
     await use(new PopupPage(page));
+
+    // Capture a screenshot on failure and attach it to the test report.
+    if (testInfo.status !== testInfo.expectedStatus) {
+      const screenshotPath = testInfo.outputPath('failure.png');
+      await page.screenshot({ path: screenshotPath, fullPage: true });
+      await testInfo.attach('failure screenshot', {
+        path: screenshotPath,
+        contentType: 'image/png',
+      });
+    }
+
     await page.close();
   },
 });

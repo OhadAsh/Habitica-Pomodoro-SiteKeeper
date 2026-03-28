@@ -5,6 +5,7 @@ module.exports = defineConfig({
   testMatch: '**/*.spec.js',
   timeout: 30_000,
   retries: 1,
+  workers: 4,
   outputDir: 'test-results',
   reporter: [
     ['list'],
